@@ -76,17 +76,24 @@
         return lSmall ? vtimes(d,c/(l*l)) : vtimes(d,-c/(l*l));
     }
 
+    function getMode(options){
+        var passedIn = options("initialPlayer");
+        if(!passedIn) passedIn = (Math.random()<0.5) ? "p1" : "p2";
+        if(passedIn==="p1") return "p1turn";
+        if(passedIn==="p2") return "p2turn";
+        return (Math.random()<0.5) ? "p1turn" : "p2turn";
+    }
+
     function Charges(options){
         options = cascadeIntoOutput(options||{},Charges.defaltOptions);
         this.piecesPerPlayer = options('piecesPerPlayer');
-        this.offsetFromGoal = options('offsetFromGoal');
         this.dt = options('dt');
         this.g = options('g');
         this.nPucks = options('nPucks');
         this.initPieces();
         this.initPucks();
         this.cursor = [0,0];
-        this.mode = Math.random()<0.5 ? "p1turn" : "p2turn";
+        this.mode = getMode(options);
         this.next = this.mode === "p1turn" ? "p2" : "p1";
         this.validModes = {
             p1turn:true,
@@ -151,8 +158,9 @@
             pieces[this.selected][1] = this.originalPos[1];
             this.selected = undefined;
             this.originalPos = undefined;
-        }
-    }
+        };
+        this.future = this.predict(this.ticksPerUpdate);
+    };
 
     Charges.prototype.setCursor = function(p){
         this.cursor[0] = p[0];
@@ -179,7 +187,6 @@
 
     Charges.defaltOptions = {
         piecesPerPlayer:10,
-        offsetFromGoal:0.15,
         g:1e3,
         nPucks:7,
         dt:0.0035,
@@ -321,6 +328,14 @@
         return positions;
     };
 
+    var sqrt = Math.sqrt;
+    Charges.prototype.getPuckSpeed = function(puckIndex){
+        var pi = puckIndex*4;
+        var vx = this.pucks[pi+2];
+        var vy = this.pucks[pi+3];
+        return sqrt(vx*vx+vy*vy);
+    };
+
     Charges.prototype.forEachPuck = function(f,from){
         var pucks = from || this.pucks;
         var n = pucks.length/4;
@@ -356,6 +371,58 @@
         var tickTock = Date.now()-now;
         console.log("Predicting the future took: ", tickTock, "ms");
         return out;
+    };
+
+    Charges.prototype.toJSON = function(){
+        if(false){
+            throw new Error("Shouldn't serialize a Charges object in update mode.");
+        } else {
+            return JSON.stringify({
+                mode:this.mode,
+                pucks:this.pucks.map(nanToNull),
+                playerOnePieces:this.playerOnePieces,
+                playerTwoPieces:this.playerTwoPieces,
+                playerOneScore:this.playerOneScore,
+                playerTwoScore:this.playerTwoScore,
+                moveRadius:this.moveRadius,
+                selected:this.selected,
+                next:this.next,
+                ticksPerUpdate:this.ticksPerUpdate,
+                ticksLeft:this.ticksLeft,
+                cursor:this.cursor,
+                dt:this.dt,
+                g:this.g
+            });
+        }
+        function nanToNull(x){
+            if(isNaN(x)) return null;
+            return x;
+        }
+    };
+
+    Charges.prototype.syncFromJSON = function(s){
+        var data = JSON.parse(s);
+        this.mode = data.mode;
+        this.pucks = data.pucks.map(nullToNaN);
+        this.playerOneScore = data.playerOneScore;
+        this.playerTwoScore = data.playerTwoScore;
+        this.playerOnePieces = data.playerOnePieces;
+        this.playerTwoPieces = data.playerTwoPieces;
+        this.moveRadius = data.moveRadius;
+        this.selected = data.selected;
+        this.next = data.next;
+        this.ticksPerUpdate = data.ticksPerUpdate;
+        this.ticksLeft = data.ticksLeft;
+        this.cursor = data.cursor;
+        this.dt = data.dt;
+        this.g = data.g;
+        this.future = this.predict(this.ticksPerUpdate);
+        return this;
+
+        function nullToNaN(x){
+            if(x===null) return NaN;
+            return x;
+        }
     };
 
     global.Charges = Charges;

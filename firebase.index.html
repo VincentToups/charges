@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Charges</title>
+    <link rel="stylesheet" type="text/css" href="./style.css">
+    <script src="https://www.gstatic.com/firebasejs/3.6.9/firebase.js"></script>
+    <script>
+      // Initialize Firebase
+      var config = {
+      apiKey: "AIzaSyDVBwdTWG7rh7tuyYEKhZK_Kv2P0DivqqA",
+      authDomain: "charges-4daf7.firebaseapp.com",
+      databaseURL: "https://charges-4daf7.firebaseio.com",
+      storageBucket: "charges-4daf7.appspot.com",
+      messagingSenderId: "484675983785"
+      };
+      var firebaseInstance = firebase.initializeApp(config);
+    </script>
+    <script src = "tinycolor.js"></script>
+    <script src = "puff.js"></script>
+    <script src = "Charges.js"></script>
+    <script src = "ChargesView.js"></script>
+    <script src = "FirebaseTwoPlayerChargesView.js"></script>
+    <script src = "firebase.index.js"></script>
+  </head>
+  <body>
+    <canvas id="game" tabindex="1"></canvas>
+    <div id="instructions">
+      <h1>Charges</h1>
+      <div>(Please allow the Google sign in pop up.)</div>
+      <p>This is a hot-seat, two player strategy game.</p>
+      <p>Each player controls 16 pieces, each with a positive or negative charge.</p>
+      <p>Positive charges repel the seven pucks, negative charges attract them. Player's score points by pushing or pulling pucks off of the screen on their opponent's side. The winner is the one with the most points.</p>
+      <p>Click near a piece on your turn to move it within its move range. `c` cancels a move.</p>
+      <p>After each move the charges will be moved forward in time. Red lines indicate future motion.</p>
+      <p>Press refresh to start a new game.</p>
+      <h1>Chat</h1>
+      <div id="chat">
+        <div id="chat-messages"></div>
+        <textarea id="chat-text"></textarea>
+      </div>
+    </div>
+  </body>
+</html>
